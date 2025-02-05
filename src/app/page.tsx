@@ -10,7 +10,12 @@ export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleImageSelect = async (file: File) => {
+  const handleImageSelect = async (file: File | null) => {
+    if (!file) {
+      setSelectedFile(null);
+      setHasImage(false);
+      return;
+    }
     console.log('Selected file:', file);
     setSelectedFile(file);
     setHasImage(true);
