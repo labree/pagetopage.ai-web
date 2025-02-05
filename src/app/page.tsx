@@ -1,101 +1,134 @@
-import Image from "next/image";
+'use client';
+
+import { ImageUpload } from "@/components/ImageUpload";
+import { useState } from "react";
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const router = useRouter();
+  const [hasImage, setHasImage] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleImageSelect = async (file: File) => {
+    console.log('Selected file:', file);
+    setSelectedFile(file);
+    setHasImage(true);
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedFile) return;
+    setIsUploading(true);
+
+    try {
+      // Convert to PNG if not already PNG
+      const canvas = document.createElement('canvas');
+      const img = new Image();
+      
+      img.src = URL.createObjectURL(selectedFile);
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => reject(new Error('Failed to load image'));
+      });
+
+      // Clean up the object URL
+      URL.revokeObjectURL(img.src);
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Could not get canvas context');
+      
+      ctx.drawImage(img, 0, 0);
+      
+      // Convert to blob
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Failed to create blob'));
+          }
+        }, 'image/png');
+      });
+
+      // Add a check to ensure blob was created
+      if (!blob || blob.size === 0) {
+        throw new Error('Created blob is empty');
+      }
+
+      // Log the blob size to help debug
+      console.log('Blob size:', blob.size);
+
+      // Create form data
+      const formData = new FormData();
+      formData.append('images', blob, 'image.png');
+
+      const response = await fetch('https://backend-830284147363.us-east1.run.app/process-document', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed: ' + response.statusText);
+      }
+
+      const data = await response.json();
+      
+      // Extract the text from the first result
+      const text = data.results[0].text;
+      
+      // Navigate to editor with the text
+      router.push(`/editor?text=${encodeURIComponent(text)}`);
+    } catch (error) {
+      console.error('Upload error:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-8 sm:p-20">
+      <main className="max-w-2xl mx-auto flex flex-col gap-6">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4 font-[family-name:var(--font-geist-sans)]">
+            PageToPage.ai
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-8 font-[family-name:var(--font-geist-mono)]">
+            Upload your images in JPEG, PNG, or WebP format. Maximum file size is 10MB.
+          </p>
         </div>
+
+        <ImageUpload
+          maxSizeInMB={10}
+          acceptedFileTypes={['image/jpeg', 'image/png', 'image/webp']}
+          onImageSelect={handleImageSelect}
+          className="bg-background dark:bg-[#111]"
+        />
+
+        {hasImage && (
+          <button
+            onClick={handleConfirm}
+            disabled={isUploading}
+            className={`mt-4 px-6 py-2 bg-green-500 hover:bg-green-600 
+              text-white font-semibold rounded-lg transition-colors
+              font-[family-name:var(--font-geist-sans)]
+              ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
+              flex items-center justify-center gap-2`}
+          >
+            {isUploading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Converting...
+              </>
+            ) : (
+              'Confirm'
+            )}
+          </button>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
