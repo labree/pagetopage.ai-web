@@ -8,11 +8,11 @@ interface ImageUploadProps {
   maxSizeInMB?: number;
   acceptedFileTypes?: string[];
   className?: string;
-  onImageSelect?: (file: File) => void;
+  onImageSelect?: (file: File | null) => void;
 }
 
 export function ImageUpload({
-  maxSizeInMB = 5,
+  maxSizeInMB = 10,
   acceptedFileTypes = ['image/jpeg', 'image/png', 'image/webp'],
   className = '',
   onImageSelect
@@ -24,7 +24,7 @@ export function ImageUpload({
     isLoading,
     error,
     handleImageSelect,
-    handleDrop,
+    handleDrop: baseHandleDrop,
     handleDragOver,
     reset
   } = useImageUpload({ maxSizeInMB, acceptedFileTypes });
@@ -37,6 +37,13 @@ export function ImageUpload({
     handleImageSelect(e.target.files);
     if (e.target.files?.[0] && onImageSelect) {
       onImageSelect(e.target.files[0]);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    baseHandleDrop(e);
+    if (e.dataTransfer.files?.[0] && onImageSelect) {
+      onImageSelect(e.dataTransfer.files[0]);
     }
   };
 
@@ -78,6 +85,7 @@ export function ImageUpload({
               onClick={(e) => {
                 e.stopPropagation();
                 reset();
+                if (onImageSelect) onImageSelect(null);
               }}
               className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full
                 hover:bg-red-600 transition-colors"

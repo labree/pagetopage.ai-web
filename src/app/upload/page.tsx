@@ -3,16 +3,12 @@
 import { ImageUpload } from '@/components/ImageUpload';
 
 export default function UploadPage() {
-  const handleImageSelect = async (file: File) => {
-    // Here you would typically upload the file to your server
-    // Example:
-    // const formData = new FormData();
-    // formData.append('image', file);
-    // const response = await fetch('/api/upload', {
-    //   method: 'POST',
-    //   body: formData,
-    // });
-    console.log('Selected file:', file);
+  const handleImageSelect = async (file: File | null) => {
+    if (file) {
+      console.log('Selected file:', file);
+    } else {
+      console.log('No file selected');
+    }
   };
 
   return (
