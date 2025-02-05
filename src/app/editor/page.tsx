@@ -1,42 +1,43 @@
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
+import { useState } from 'react';
+
+// Dynamically import EditorContent with no SSR
+const EditorContent = dynamic(() => import('@/components/EditorContent').then(mod => mod.EditorContent), {
+  ssr: false,
+  loading: () => <div>Loading...</div>
+});
 
 export default function EditorPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [text, setText] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
 
-  useEffect(() => {
-    const initialText = searchParams.get('text');
-    if (initialText) {
-      setText(decodeURIComponent(initialText));
-    }
-  }, [searchParams]);
+  const handleReupload = () => {
+    router.push('/');
+  };
 
   const handleCopy = async () => {
     try {
+      const text = new URLSearchParams(window.location.search).get('text') || '';
       await navigator.clipboard.writeText(text);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy text:', err);
+      console.error('Failed to copy:', err);
     }
   };
 
   const handleSave = async () => {
     setIsSharing(true);
     try {
+      const text = new URLSearchParams(window.location.search).get('text') || '';
       if (navigator.share) {
-        await navigator.share({
-          title: 'Shared Text',
-          text: text,
-        });
+        await navigator.share({ title: 'Shared Text', text });
       } else {
-        // Fallback to copy if Web Share API is not available
         await navigator.clipboard.writeText(text);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
@@ -46,10 +47,6 @@ export default function EditorPage() {
     } finally {
       setIsSharing(false);
     }
-  };
-
-  const handleReupload = () => {
-    router.push('/');
   };
 
   return (
@@ -115,17 +112,9 @@ export default function EditorPage() {
           </div>
         </div>
 
-        <div className="w-full border rounded-lg dark:border-gray-700">
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            className="w-full h-[70vh] p-6 rounded-lg 
-              font-mono text-base bg-transparent
-              focus:outline-none focus:ring-2 focus:ring-blue-500
-              dark:text-gray-200 resize-none"
-            placeholder="No text received from server..."
-          />
-        </div>
+        <Suspense fallback={<div>Loading...</div>}>
+          <EditorContent />
+        </Suspense>
       </main>
     </div>
   );
