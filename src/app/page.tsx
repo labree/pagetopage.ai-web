@@ -70,7 +70,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append('images', blob, 'image.png');
 
-      const response = await fetch('https://backend-830284147363.us-east1.run.app/process-document', {
+      const response = await fetch('https://backend-830284147363.us-east1.run.app/process-image', {
         method: 'POST',
         body: formData,
       });
@@ -82,7 +82,8 @@ export default function Home() {
       const data = await response.json();
       
       // Extract the text from the first result
-      const text = data.results[0].text;
+      //const text = data.results[0].text;
+      const text = data.results[0].full_text;
       
       // Navigate to editor with the text
       router.push(`/editor?text=${encodeURIComponent(text)}`);
