@@ -83,7 +83,7 @@ export default function Home() {
       
       // Extract the text from the first result
       //const text = data.results[0].text;
-      const text = data.results[0].full_text;
+      const text = data.results[0].formatted_text;
       
       // Navigate to editor with the text
       router.push(`/editor?text=${encodeURIComponent(text)}`);
