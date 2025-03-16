@@ -4,6 +4,12 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
 
+interface Paragraph {
+  text: string;
+  confidence: number;
+  bounds: number[][];
+}
+
 export default function Home() {
   const router = useRouter();
   const [hasImage, setHasImage] = useState(false);
@@ -81,12 +87,13 @@ export default function Home() {
 
       const data = await response.json();
       
-      // Extract the text from the first result
-      //const text = data.results[0].text;
-      const text = data.results[0].formatted_text;
+      // Format text by paragraphs with double line breaks
+      const formattedText = data.results[0].paragraphs
+        .map((paragraph: Paragraph) => paragraph.text)
+        .join('\n\n');
       
-      // Navigate to editor with the text
-      router.push(`/editor?text=${encodeURIComponent(text)}`);
+      // Navigate to editor with the formatted text
+      router.push(`/editor?text=${encodeURIComponent(formattedText)}`);
     } catch (error) {
       console.error('Upload error:', error);
       // You might want to show an error message to the user here
