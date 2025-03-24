@@ -8,10 +8,25 @@ export function FeedbackButton() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const feedback = formData.get("feedback");
+    const feedbackData = {
+      name: formData.get('name') || 'Anonymous',
+      feedback: formData.get('feedback'),
+    };
+
+    try {
+      const response = await fetch('https://www.backend.app/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(feedbackData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
 
     // TODO: Replace with your feedback submission logic
-    console.log("Feedback submitted:", feedback);
+    console.log("Feedback submitted:", { name, feedback });
 
     // Close the modal after submission
     setIsOpen(false);
@@ -74,14 +89,43 @@ export function FeedbackButton() {
             </h2>
 
             <form onSubmit={handleSubmit}>
-              <textarea
-                name="feedback"
-                placeholder="Tell us what you think..."
-                className="w-full h-32 p-3 border rounded-lg mb-4 
-                  dark:bg-gray-700 dark:border-gray-600 dark:text-white
-                  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
+              {/* Name Input */}
+              <div>
+                <label 
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  Your Name (optional)
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  placeholder="Enter your name"
+                  className="w-full p-3 border rounded-lg
+                    dark:bg-gray-700 dark:border-gray-600 dark:text-white
+                    focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Feedback Textarea */}
+              <div>
+                <label 
+                  htmlFor="feedback"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  Your Feedback
+                </label>
+                <textarea
+                  id="feedback"
+                  name="feedback"
+                  placeholder="Tell me what you think..."
+                  className="w-full h-32 p-3 border rounded-lg
+                    dark:bg-gray-700 dark:border-gray-600 dark:text-white
+                    focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
 
               <div className="flex justify-end gap-2">
                 <button
