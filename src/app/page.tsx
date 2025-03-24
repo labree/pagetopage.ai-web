@@ -2,6 +2,7 @@
 
 import { ImageUpload } from "@/components/ImageUpload";
 import { useState } from "react";
+import { FeedbackButton } from "@/components/FeedbackButton";
 import { useRouter } from 'next/navigation';
 
 interface Paragraph {
@@ -104,6 +105,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen p-8 sm:p-20">
+      <FeedbackButton />
       <main className="max-w-2xl mx-auto flex flex-col gap-6">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4 font-[family-name:var(--font-geist-sans)]">

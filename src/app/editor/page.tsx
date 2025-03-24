@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
+import { FeedbackButton } from '@/components/FeedbackButton';
 
 // Dynamically import EditorContent with no SSR
 const EditorContent = dynamic(() => import('@/components/EditorContent').then(mod => mod.EditorContent), {
@@ -51,6 +52,7 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-screen p-8 sm:p-20">
+      <FeedbackButton />
       <main className="max-w-4xl mx-auto flex flex-col gap-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
