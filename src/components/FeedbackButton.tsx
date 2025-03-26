@@ -5,31 +5,49 @@ import { useState } from "react";
 export function FeedbackButton() {
   const [isOpen, setIsOpen] = useState(false);
 
+  const getCloudVision = () => {
+    const path = window.location.pathname;
+
+    // Add your path conditions here
+    if (path.startsWith("/editor")) {
+      // Extract vision ID from URL if it's in the format /vision/[id]
+      return path.split("/")[2] || "none";
+    } else if (path === "/dashboard") {
+      // If you have a specific value for dashboard
+      return "dashboard_view";
+    }
+
+    return "none";
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const feedbackData = {
-      name: formData.get('name') || 'Anonymous',
-      feedback: formData.get('feedback'),
+      name: formData.get("name") || "Anonymous",
+      feedback: formData.get("feedback"),
+      page: window.location.pathname, // Add current page path
+      fullUrl: window.location.href, // Add full URL including query parameters
     };
 
     try {
-      const response = await fetch('https://www.backend.app/feedback', {
-        method: 'POST',
+      const response = await fetch("https://www.backend.app/feedback", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(feedbackData),
       });
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
+      }
 
-    // TODO: Replace with your feedback submission logic
-    console.log("Feedback submitted:", { name, feedback });
-
-    // Close the modal after submission
-    setIsOpen(false);
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Failed to submit feedback:", error);
+      // You might want to show an error message to the user here
+    }
   };
 
   return (
@@ -91,7 +109,7 @@ export function FeedbackButton() {
             <form onSubmit={handleSubmit}>
               {/* Name Input */}
               <div>
-                <label 
+                <label
                   htmlFor="name"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >
@@ -110,7 +128,7 @@ export function FeedbackButton() {
 
               {/* Feedback Textarea */}
               <div>
-                <label 
+                <label
                   htmlFor="feedback"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { ImageUpload } from '@/components/ImageUpload';
+import { ImageUpload } from "@/components/ImageUpload";
 
 export default function UploadPage() {
   const handleImageSelect = async (file: File | null) => {
     if (file) {
-      console.log('Selected file:', file);
+      console.log("Selected file:", file);
     } else {
-      console.log('No file selected');
+      console.log("No file selected");
     }
   };
 
@@ -16,9 +16,9 @@ export default function UploadPage() {
       <h1 className="text-2xl font-bold mb-4">Upload Image</h1>
       <ImageUpload
         maxSizeInMB={5}
-        acceptedFileTypes={['image/jpeg', 'image/png', 'image/webp']}
+        acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}
         onImageSelect={handleImageSelect}
       />
     </div>
   );
-} 
+}
