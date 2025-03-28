@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { FeedbackButton } from '@/components/FeedbackButton';
@@ -17,6 +17,16 @@ export default function EditorPage() {
   const [isCopied, setIsCopied] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
 
+  const getStoredImage = () => {
+    return sessionStorage.getItem('originalImage');
+  };
+
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem('originalImage');
+    };
+  })
+  
   const handleReupload = () => {
     router.push('/');
   };
