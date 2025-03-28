@@ -3,44 +3,33 @@
 import { useState } from "react";
 
 interface FeedbackButtonProps {
-  getStoredImage: () => string | null;
-  getCloudVisionData: () => any | null;
+  getStoredImage?: () => string | null;
+  getCloudVisionData?: () => any | null;
 }
 
 export function FeedbackButton({ getStoredImage, getCloudVisionData }: FeedbackButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const getCloudVision = () => {
-    const path = window.location.pathname;
-
-    // Add your path conditions here
-    if (path.startsWith("/editor")) {
-      // Extract vision ID from URL if it's in the format /vision/[id]
-      return path.split("/")[2] || "none";
-    } else if (path === "/dashboard") {
-      // If you have a specific value for dashboard
-      return "dashboard_view";
-    }
-
-    return "none";
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    // Get both the stored image and Cloud Vision data
-    const imageData = getStoredImage();
-    const cloudVisionData = getCloudVisionData();
-    
-    const feedbackData = {
+    // Base feedback data that's always included
+    const feedbackData: any = {
       name: formData.get("name") || "Anonymous",
       feedback: formData.get("feedback"),
       page: window.location.pathname,
       fullUrl: window.location.href,
-      image: imageData,
-      cloudVisionData: cloudVisionData,
     };
+
+    // Only include image and Cloud Vision data if we're on the editor page
+    if (getStoredImage && getCloudVisionData) {
+      const imageData = getStoredImage();
+      const cloudVisionData = getCloudVisionData();
+      
+      if (imageData) feedbackData.image = imageData;
+      if (cloudVisionData) feedbackData.cloudVisionData = cloudVisionData;
+    }
 
     try {
       const response = await fetch("https://www.backend.app/feedback", {
