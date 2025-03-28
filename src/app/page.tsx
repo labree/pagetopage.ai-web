@@ -34,13 +34,13 @@ export default function Home() {
     setIsUploading(true);
 
     try {
-      // Store the original image in sessionStorage for later use
-      const imageBase64 = await new Promise<string>(resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(selectedFile);
-      }
-      sessionStorage.setItem("otiginalImage", imageBase64);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const imageBase64 = reader.result as string;
+        sessionStorage.setItem("originalImage", imageBase64);
+      };
+      reader.readAsDataURL(selectedFile);
+
       // Convert to PNG if not already PNG
       const canvas = document.createElement("canvas");
       const img = new Image();
@@ -99,16 +99,18 @@ export default function Home() {
 
       const data = await response.json();
 
+      // Store the Cloud Vision response data
+      sessionStorage.setItem("cloudVisionData", JSON.stringify(data));
+
       // Format text by paragraphs with double line breaks
       const formattedText = data.results[0].paragraphs
         .map((paragraph: Paragraph) => paragraph.text)
         .join("\n\n");
 
       // Navigate to editor with the formatted text
-      router.push(`/editor?text=${encodeURIComponent(formattedText)}&hasStoredImage=true`);
+      router.push(`/editor?text=${encodeURIComponent(formattedText)}`);
     } catch (error) {
       console.error("Upload error:", error);
-      // You might want to show an error message to the user here
     } finally {
       setIsUploading(false);
     }

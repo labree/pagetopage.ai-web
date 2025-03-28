@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 
-export function FeedbackButton() {
+interface FeedbackButtonProps {
+  getStoredImage: () => string | null;
+  getCloudVisionData: () => any | null;
+}
+
+export function FeedbackButton({ getStoredImage, getCloudVisionData }: FeedbackButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const getCloudVision = () => {
@@ -23,11 +28,18 @@ export function FeedbackButton() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    
+    // Get both the stored image and Cloud Vision data
+    const imageData = getStoredImage();
+    const cloudVisionData = getCloudVisionData();
+    
     const feedbackData = {
       name: formData.get("name") || "Anonymous",
       feedback: formData.get("feedback"),
-      page: window.location.pathname, // Add current page path
-      fullUrl: window.location.href, // Add full URL including query parameters
+      page: window.location.pathname,
+      fullUrl: window.location.href,
+      image: imageData,
+      cloudVisionData: cloudVisionData,
     };
 
     try {

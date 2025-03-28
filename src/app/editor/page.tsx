@@ -21,9 +21,15 @@ export default function EditorPage() {
     return sessionStorage.getItem('originalImage');
   };
 
+  const getCloudVisionData = () => {
+    const data = sessionStorage.getItem('cloudVisionData');
+    return data ? JSON.parse(data) : null;
+  };
+
   useEffect(() => {
     return () => {
       sessionStorage.removeItem('originalImage');
+      sessionStorage.removeItem('cloudVisionData');
     };
   })
   
@@ -62,7 +68,10 @@ export default function EditorPage() {
 
   return (
     <div className="min-h-screen p-8 sm:p-20">
-      <FeedbackButton />
+      <FeedbackButton 
+        getStoredImage={getStoredImage}
+        getCloudVisionData={getCloudVisionData}
+      />
       <main className="max-w-4xl mx-auto flex flex-col gap-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
