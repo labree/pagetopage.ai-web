@@ -32,7 +32,7 @@ export function FeedbackButton({ getStoredImage, getCloudVisionData }: FeedbackB
     }
 
     try {
-      const response = await fetch("https://www.backend.app/feedback", {
+      const response = await fetch("https://backend-830284147363.us-east1.run.app/notion-upload-detailed", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
